@@ -27,12 +27,12 @@ from scipy.sparse import issparse
 from sklearn.utils import check_array
 from sklearn.utils import check_random_state
 from sklearn.utils.validation import _check_sample_weight
-
+from . import _tree
 from sklearn.tree._criterion import Criterion
 from sklearn.tree._splitter import Splitter
 from sklearn.tree._tree import DepthFirstTreeBuilder
 from sklearn.tree._tree import BestFirstTreeBuilder
-from ._tree import RCTree
+from rrcf import RCTree
 from sklearn.tree import _tree, _splitter, _criterion
 
 from sklearn.tree import DecisionTreeRegressor

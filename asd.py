@@ -44,8 +44,5 @@ from wtforms.fields.html5 import DateField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.validators import DataRequired, EqualTo
 from flask import session
-
-name = '41:08:a1:0b'
-data = Result.query.filter_by(sensor_sensor_name=name).order_by(
-    Result.result_key.desc())[:10]
-print(data)
+import sys
+sys.path.append("c:\Python\DLLs")
