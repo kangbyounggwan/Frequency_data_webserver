@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+</head>
+<div class="container">
+    <div class="row mt-5">
+        <h1>센서명:{{sensor_name}} - {{sensor_axis}} </h1>
+    </div>
+</div>
+
+<div id="container"></div>
+<div id="container2"></div>
+
+</html>
+
+<script>
+$(function() {
+    /* 모든 차트에 대해서 동일한 옵션 적용을 위해서 setOptions를 사용한다. */
+     Highcharts.setOptions({
+         chart: {
+             type:'line',
+             backgroundColor: {
+                 linearGradient: [0, 0, 500, 500],
+                 stops: [
+                     [0, 'rgb(255, 255, 255)'],
+                     [1, 'rgb(255, 255, 255)']
+                     ]
+             },
+             borderWidth: 2,
+             plotBackgroundColor: 'rgba(255, 255, 255, .9)',
+             plotShadow: true,
+             plotBorderWidth: 1
+         }
+
+     });
+
+  var chart1 = new Highcharts.chart({
+  chart: {
+    type: 'scatter',
+    renderTo:'container',
+    zoomType: 'xy'
+  },
+  title: {
+    text: 'data'
+  },
+  xAxis: {
+    title: {
+      enabled: true,
+      text: 'Reduce X'
+    },
+    startOnTick: true,
+    endOnTick: true,
+    showLastLabel: true
+  },
+  yAxis: {
+    title: {
+      text: 'Reduce Y'
+    }
+  },
+  legend: {
+    layout: 'vertical',
+    align: 'left',
+    verticalAlign: 'top',
+    x: 100,
+    y: 70,
+    floating: true,
+    backgroundColor: Highcharts.defaultOptions.chart.backgroundColor,
+    borderWidth: 1
+  },
+  plotOptions: {
+    scatter: {
+      marker: {
+        radius: 5,
+        states: {
+          hover: {
+            enabled: true,
+            lineColor: 'rgb(100,100,100)'
+          }
+        }
+      },
+      states: {
+        hover: {
+          marker: {
+            enabled: false
+          }
+        }
+      },
+          series: {
+        cursor: 'pointer',
+        point: {
+            events: {
+
+                click: function() {
+                    this.update({ color: '#fe5800' });
+                    var tableDate = this.index;
+                        console.log(this);
+                        alert(tableDate);
+
+
+                }
+            }
+        }
+    },
+      tooltip: {
+        headerFormat: '<b>{series.name}</b><br>',
+        pointFormat: '{point.x} , {point.y} ,{point.index}'
+      }
+    }
+  },
+  series: [{
+    name: '이상',
+    color: 'rgba(223, 83, 83, .5)',
+    data: {{outlier}}
+  }, {
+    name: '정상',
+    color: 'rgba(119, 152, 191, .5)',
+    data:{{inlier}}
+  }]
+});
+
+
+var chart2 =  new Highcharts.chart({
+    chart: {
+        type: 'column',
+        renderTo: 'container2',
+        zoomType: 'xy'
+
+    },
+    tooltip: {
+    pointFormat: '{point.x} , {point.y}'
+    },
+
+
+ plotOptions: {
+        series: {
+            cursor: 'pointer',
+            point: {
+                events: {
+
+                    click: function() {
+                        var tableDate = this.index;
+                            console.log(this);
+
+
+
+
+                    }
+                }
+            }
+        }
+
+    },
+    title: {
+    text: 'score'
+    },
+
+    series: [{
+     name:'score',
+     data:{{score}}
+      }]
+    });
+    });
+</script>
