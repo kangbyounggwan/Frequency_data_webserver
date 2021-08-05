@@ -27,7 +27,6 @@ from scipy.sparse import issparse
 from sklearn.utils import check_array
 from sklearn.utils import check_random_state
 from sklearn.utils.validation import _check_sample_weight
-from . import _tree
 from sklearn.tree._criterion import Criterion
 from sklearn.tree._splitter import Splitter
 from sklearn.tree._tree import DepthFirstTreeBuilder
