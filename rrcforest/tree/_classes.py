@@ -31,7 +31,7 @@ from sklearn.tree._criterion import Criterion
 from sklearn.tree._splitter import Splitter
 from sklearn.tree._tree import DepthFirstTreeBuilder
 from sklearn.tree._tree import BestFirstTreeBuilder
-from rrcf import RCTree
+from ._tree import RCTree
 from sklearn.tree import _tree, _splitter, _criterion
 
 from sklearn.tree import DecisionTreeRegressor

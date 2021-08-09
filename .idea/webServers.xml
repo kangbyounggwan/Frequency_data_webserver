@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="10e71488-f845-440a-8ca7-5c2b58ffcf28" name="dongseo" url="ec2-3-36-131-14.ap-northeast-2.compute.amazonaws.com">
+        <fileTransfer rootFolder="" accessType="SFTP" host="ec2-3-36-131-14.ap-northeast-2.compute.amazonaws.com" port="22" sshConfigId="b3079215-4fd5-4265-b09d-f7063a0bb874" sshConfig="ubuntu@ec2-3-36-131-14.ap-northeast-2.compute.amazonaws.com:22 key" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
