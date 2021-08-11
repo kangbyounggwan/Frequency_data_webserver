@@ -388,7 +388,7 @@ def view_deteil(robot_id=None):
             Schedata.data_id.desc())[:5]
         temper_ = Schedata.query.filter_by(sensor_sensor_name=name).order_by(
             Schedata.data_id.desc()).first()
-        if temper_!= None:
+        if temper_ != None:
             temper.append(temper_.temperate)
         else:
             continue
@@ -396,7 +396,6 @@ def view_deteil(robot_id=None):
         globals()['{}'.format(sensor[i].sensor_name)] = Result.query.filter_by(sensor_sensor_name=name).order_by(
             Result.result_key.desc())[:5]
         ai_result.append(globals()['{}'.format(sensor[i].sensor_name)])
-
 
     Train.query.filter(Train.model_name == None).delete()
     db.session.commit()
@@ -422,7 +421,7 @@ def view_deteil(robot_id=None):
 
 # 관리자 deteil
 # 로봇 세부사항(view detail)
-@app.route('/deteil_ad/<int:robot_id>', methods=['GET','POST'])
+@app.route('/deteil_ad/<int:robot_id>', methods=['GET', 'POST'])
 def view_deteil_ad(robot_id=None):
     robot = Robot.query.filter_by(robot_id=robot_id).first()
     time, status, speed, step = staus.status()
@@ -439,7 +438,6 @@ def view_deteil_ad(robot_id=None):
     ai_result = []
     sensor_id = []
     temper = []
-    print(temper)
     for i in range(len(sensor)):
         name = sensor[i].sensor_name
         axis.append(sensor[i].axis)
@@ -451,21 +449,27 @@ def view_deteil_ad(robot_id=None):
         result.append(globals()['{}'.format(sensor[i].sensor_name)])
         temper_ = Schedata.query.filter_by(sensor_sensor_name=name).order_by(
             Schedata.data_id.desc()).first()
-        print(temper_)
         if temper_ != None:
             temper.append(temper_.temperate)
         globals()['{}'.format(sensor[i].sensor_name)] = Result.query.filter_by(sensor_sensor_name=name).order_by(
             Result.result_key.desc())[:10]
         ai_result.append(globals()['{}'.format(sensor[i].sensor_name)])
-    avr_tem = sum(temper) /len(temper)
-    print(avr_tem)
-    print(result)
+    avr_tem = sum(temper) / len(temper)
+
     print(speed)
 
-
+    if request.method == "POST":
+        print(status)
+        print(step)
+        return jsonify({
+            "speeds": int(speed),
+            "status": str(status),
+            "step": int(step),
+            "temp": float(avr_tem),
+        })
 
     return render_template('view_details_ad.html',
-                           speed =speed,
+                           speed=speed,
                            temper=avr_tem,
                            status=status,
                            step=step,
@@ -785,7 +789,7 @@ def all_dash():
 
 # model 생성및 저장
 @app.route('/api/models/<int:num>', methods=['GET'])
-def new_model(num=None):
+def new_model(num=None, select=None):
     # model 생성및 저장
     item_ = Train.query.filter_by(num=num).first()
     item = item_.data_set
@@ -805,7 +809,7 @@ def new_model(num=None):
     print(X_test.shape)
 
     # 본인data model score 생성
-    model, score, result = anomal_model.algorithm_train(X_train, X_test)
+    model, score, result = anomal_model.algorithm_train(X_train, X_test, select)
     current_model_path = MODEL_FILE_PATH + format('svgmodel{}.model'.format(item_.num))
     model_write_file = open(current_model_path, "wb")
     joblib.dump(model, model_write_file)
@@ -835,10 +839,11 @@ def new_model(num=None):
 def modeling():
     if request.method == 'POST':
         temp = request.form['id']
-
+        select = request.form.get('algorithm')
     else:
         temp = None
-    return redirect(url_for('new_model', num=temp))
+        select = None
+    return redirect(url_for('new_model', num=temp, select=select))
 
 
 def scatter(data, predict):
@@ -863,4 +868,4 @@ job = scheduler.add_job(staus.status, 'interval', seconds=5)
 scheduler.start()
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port="5005", use_reloader=False, threaded=True)
+    app.run(host="127.0.0.1", port="9999", use_reloader=False, threaded=True)

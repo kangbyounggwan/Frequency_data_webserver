@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from rrcforest import RobustRandomCutForest
 from sklearn.ensemble import IsolationForest
+from sklearn.neighbors import LocalOutlierFactor
 import time
 import joblib
 import os
@@ -37,16 +38,21 @@ def anomal_model_(item, detection_type, training_ratio,samples):
         return X_train,X_test
 
 
-def algorithm_train(X_train,X_test):
-    rrcf= RobustRandomCutForest(n_estimators=200, n_jobs=-1, max_samples=10,contamination=0.05)
-    rrcf.fit_predict(X_train)
+def algorithm_train(X_train,X_test,select):
+    if select == 'rrcf':
+        algorithm = RobustRandomCutForest(n_estimators=200, n_jobs=-1, max_samples=10,contamination=0.05)
+    elif select == 'lof':
+        algorithm = LocalOutlierFactor(n_neighbors=100,contamination=0.05, novelty=True)
+    else:
+        algorithm = IsolationForest(n_estimators=200, n_jobs=-1, max_samples=10,contamination=0.05)
+    algorithm.fit_predict(X_train)
     start_time = time.time()
-    result = rrcf.predict(X_test)
+    result = algorithm.predict(X_test)
     print(X_train.shape)
-    anomaly_score = -rrcf.score_samples(X_test)
+    anomaly_score = -algorithm.score_samples(X_test)
     print(result)
 
-    return rrcf, anomaly_score, result
+    return algorithm, anomaly_score, result
 
 
 def algorithm_test(data,sample,model):

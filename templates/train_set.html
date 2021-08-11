@@ -181,6 +181,12 @@
                     <div id="one_chart"></div>
                 </figure>
                 <form method="POST" action="/modeling">
+                    <select name="algorithm">
+                        <option value="">알고리즘선택</option>
+                        <option value="rrcf">Robust Random Cut Forest</option>
+                        <option value="lof">local outlier factor</option>
+                        <option value="iso">isolation forest</option>
+                    </select>
                     <button type="submit" class="btn btn-primary" name="id" value={{last_num}} style="float: right;">모델생성</button>
 
                 </form>
