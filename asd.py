@@ -44,5 +44,12 @@ from wtforms.fields.html5 import DateField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.validators import DataRequired, EqualTo
 from flask import session
-import sys
-sys.path.append("c:\Python\DLLs")
+name ='41:08:a1:0b'
+temper_ = Schedata.query.filter_by(sensor_sensor_name=name).order_by(
+    Schedata.data_id.desc()).first()
+if temper_ == None:
+    t = 0
+
+    print(t)
+else:
+    print(temper_.temperate)

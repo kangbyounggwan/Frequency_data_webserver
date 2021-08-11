@@ -2,7 +2,6 @@ from datetime import datetime
 from base64 import b64encode
 from flask import Flask
 from flask import jsonify, request
-from flask_debugtoolbar import DebugToolbarExtension
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
@@ -57,8 +56,15 @@ def opc_ua_key(sensor_name, sensor_axis):
         endtime=endtime,
         axis_=sensor_axis
     )
-
-    return dates, values, timeZone
+    (temperatures, dates_) = opc_ua.DataAcquisition.get_sensor_data(
+        serverUrl=serverUrl,
+        macId=macId,
+        browseName="boardTemperature",
+        starttime=starttime,
+        endtime=endtime,
+        axis_=sensor_axis
+    )
+    return dates, values, timeZone, temperatures
 
 
 def schadule_opc():
@@ -74,14 +80,12 @@ def schadule_opc():
         curs.execute("SELECT date_stamp from sche_data where sensor_sensor_name = %s", name)
         date_raw = curs.fetchall()
 
-
         if len(date_raw) == 0:
             last_stamp = None
         else:
             data = date_raw[-1]
             date_raw_ = data[0]
             last_stamp = date_raw_
-
 
         print(last_stamp)
 
@@ -96,8 +100,9 @@ def schadule_opc():
                 model.append(i.model_name)
                 num.append(i.num)
 
-        dates, values, timeZone = opc_ua_key(name, sensor_axis)
-
+        dates, values, timeZone, temperatures = opc_ua_key(name, sensor_axis)
+        if len(temperatures) != 0:
+            print(temperatures[-1])
         data, len_ = opc_ua.DataAcquisition.plotly(dates, values)
 
         model = model[-1]
@@ -119,11 +124,12 @@ def schadule_opc():
             print(title_last)
 
         else:
+            temperatures = temperatures[-1]
+            print(temperatures)
             sample = samples
             result, score = anomal_model.algorithm_test(data, sample, model)
-            opc_ua.DataAcquisition.sche(data, title_last, result, score, name, model, num, )
+            opc_ua.DataAcquisition.sche(data, title_last, result, score, name, model, num, temperatures)
             print('업로드 완료')
-
 
             continue
 
@@ -131,18 +137,15 @@ def schadule_opc():
         if str(last_stamp) != str(title_last):
             sample = samples
             print(model)
+            temperatures = temperatures[-1]
             result, score = anomal_model.algorithm_test(data, sample, model)
-            opc_ua.DataAcquisition.sche(data, title_last, result, score, name, model, num, )
-
+            opc_ua.DataAcquisition.sche(data, title_last, result, score, name, model, num, temperatures)
 
             print('업로드 완료')
 
         else:
             print('새로운 데이터없음')
             continue
-
-
-
 
 
 scheduler = BackgroundScheduler()

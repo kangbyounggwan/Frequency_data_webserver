@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-# from rrcforest import RobustRandomCutForest
+from rrcforest import RobustRandomCutForest
 from sklearn.ensemble import IsolationForest
 import time
 import joblib
@@ -38,7 +38,7 @@ def anomal_model_(item, detection_type, training_ratio,samples):
 
 
 def algorithm_train(X_train,X_test):
-    rrcf= IsolationForest(n_estimators=200, n_jobs=-1, max_samples=10)
+    rrcf= RobustRandomCutForest(n_estimators=200, n_jobs=-1, max_samples=10,contamination=0.05)
     rrcf.fit_predict(X_train)
     start_time = time.time()
     result = rrcf.predict(X_test)

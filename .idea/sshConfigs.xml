@@ -2,7 +2,7 @@
 <project version="4">
   <component name="SshConfigs">
     <configs>
-      <sshConfig host="ec2-3-36-131-14.ap-northeast-2.compute.amazonaws.com" id="b3079215-4fd5-4265-b09d-f7063a0bb874" keyPath="C:\Users\ST200423\Desktop\dongseo.ppk" port="22" nameFormat="DESCRIPTIVE" username="ubuntu" />
+      <sshConfig host="13.125.218.250" id="b3079215-4fd5-4265-b09d-f7063a0bb874" keyPath="C:\Users\ST200423\Desktop\dongseo_isolation_ubuntu.pem" port="22" nameFormat="DESCRIPTIVE" username="ubuntu" />
     </configs>
   </component>
 </project>

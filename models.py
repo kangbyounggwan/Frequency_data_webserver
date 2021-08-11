@@ -21,7 +21,7 @@ app.config['SECRET_KEY'] = SECRET_KEY
 app.config['FLASK_ADMIN'] = FLASK_ADMIN
 app.config['CHARSET'] = 'utf-8'
 app.config['JSON_AS_ASCII'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:tachyon123@kbg.co7hg2djahjf.ap-northeast-2.rds.amazonaws.com:3306/dongseo'
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:tachyon123@kbg.co7hg2djahjf.ap-northeast-2.rds.amazonaws.com:3306/dongseo"
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_size': 100, 'pool_recycle': 280}
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:tachyon123@34.64.188.127:3306/dongseo'
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
@@ -87,7 +87,7 @@ class Robot(db.Model):
 
 class RobotSchema(ma.Schema):
     class Meta:
-        fields = (' robot_id', 'robot_name', 'robot_manufacture', 'user_count_line_name')
+        fields = ('robot_id', 'robot_name', 'robot_manufacture', 'user_count_line_name')
 
 
 robot_schema = RobotSchema()
@@ -101,18 +101,19 @@ class Schedata(db.Model):
     data_id = db.Column('data_id', Integer, primary_key=True)
     sensor_sensor_name = db.Column('sensor_sensor_name', String(20), db.ForeignKey('sensor.sensor_name'))
     sensor_sensor_id = db.Column('sensor_sensor_id', Integer, db.ForeignKey('sensor.sensor_id'))
+    temperate = db.Column('temperate', Integer)
 
-    def __init__(self, date_stamp, data_set, data_id, sensor_sensor_name, sensor_sensor_id):
+    def __init__(self, date_stamp, data_set, data_id, sensor_sensor_name, sensor_sensor_id, temperate):
         self.date_stamp = date_stamp
         self.data_set = data_set
         self.data_id = data_id
         self.sensor_sensor_name = sensor_sensor_name
         self.sensor_sensor_id = sensor_sensor_id
-
+        self.temperate = temperate
 
 class Sche_dataSchema(ma.Schema):
     class Meta:
-        fields = ('date_stamp', 'data_set', 'data_id', 'sensor_sensor_name', 'sensor_sensor_id')
+        fields = ('date_stamp', 'data_set', 'data_id', 'sensor_sensor_name', 'sensor_sensor_id', 'temperate')
 
 
 sche_schema = Sche_dataSchema()

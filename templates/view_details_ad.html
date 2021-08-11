@@ -6,13 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
     <meta name="description" content=""/>
     <meta name="author" content=""/>
+
     <title>{{robot_name}}</title>
     <link href="../static/css/styles.css" rel="stylesheet"/>
     <link href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css" rel="stylesheet"
           crossorigin="anonymous"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"
             crossorigin="anonymous"></script>
-    <script type="text/javascript" src="//code.jquery.com/jquery-3.3.1.min.js"></script>
+
 </head>
 <body class="sb-nav-fixed">
 <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
@@ -149,6 +150,60 @@
                         .
                     </div>
                 </div>
+                <div class="row">
+                {% if status == "STOP" %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card bg-danger text-white shadow">
+                        <div class="card-body">
+                            <h4>{{status}}</h4>
+                            <div class="text-white-50 small">Status</div>
+                        </div>
+                    </div>
+                </div>
+                {% elif status == "HOLD" %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card bg-primary text-white shadow">
+                        <div class="card-body">
+                            <h4>{{status}}</h4>
+                            <div class="text-white-50 small">Status</div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card bg-success text-white shadow">
+                        <div class="card-body">
+                            <h4>{{status}}</h4>
+                            <div class="text-white-50 small">Status</div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card bg-success text-white shadow">
+                        <div class="card-body">
+                            <h4>{{temper}}°C</h4>
+                            <div class="text-white-50 small">temper</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="card bg-success text-white shadow">
+                        <div class="card-body">
+                            <h4>{{speed}}mm/s</h4>
+                            <div class="text-white-50 small">Speed</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="card bg-success text-white shadow">
+                        <div class="card-body">
+                            <h4>N{{step}}</h4>
+                            <div class="text-white-50 small">Step</div>
+                        </div>
+                    </div>
+                </div>
+                </div>
                 {% for name,locate,axis,sensor_id in zip(named,locate,axis,sensor_id) %}
                 <div class="card mb-4">
                     <div class="card-header">
@@ -209,5 +264,14 @@
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
         crossorigin="anonymous"></script>
 <script src="../static/assets/demo/datatables-demo.js"></script>
+
+<script>
+function reload(){
+      setTimeout('location.reload()',5000);
+}
+
+reload();
+</script>
+
 </body>
 </html>

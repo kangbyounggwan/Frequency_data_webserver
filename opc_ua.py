@@ -10,7 +10,8 @@ import pymysql
 import datetime
 from models import Schedata, db, Train, Result, Sensor
 
-conn = pymysql.connect(host='kbg.co7hg2djahjf.ap-northeast-2.rds.amazonaws.com', user='root', passwd='tachyon123', db='dongseo', charset='utf8')
+conn = pymysql.connect(host='kbg.co7hg2djahjf.ap-northeast-2.rds.amazonaws.com', user='root', passwd='tachyon123',
+                       db='dongseo', charset='utf8')
 
 
 class OpcUaClient(object):
@@ -175,33 +176,54 @@ class DataAcquisition(object):
 
     @staticmethod
     def get_sensor_data(serverUrl, macId, browseName, starttime, endtime, axis_):
-        allValues = []
-        allDates = []
-        with OpcUaClient(serverUrl) as client:
-            assert (client._client.uaclient._uasocket.timeout == 15)
-            sensorNode = DataAcquisition.get_sensor_node(
-                client,
-                macId,
-                browseName
-            )
-
-            for path in DataAcquisition.endnodes_path_generator(sensorNode, axis_):
+        print(browseName)
+        if browseName == "boardTemperature":
+            with OpcUaClient(serverUrl) as client:
+                assert (client._client.uaclient._uasocket.timeout == 15)
+                sensorNode = \
+                    DataAcquisition.get_sensor_node(client, macId, browseName)
                 DataAcquisition.LOGGER.info(
-                    'Browsing {:s} -> {:s}'.format(
-                        macId,
-                        sensorNode.get_browse_name().Name
+                    'Browsing {:s}'.format(macId)
+                )
+                (values, dates) = \
+                    DataAcquisition.get_endnode_data(
+                        client=client,
+                        endNode=sensorNode,
+                        starttime=starttime,
+                        endtime=endtime,
+                        browseName=browseName
                     )
-                )
-                endNode = client.get_child(sensorNode, path)
-                (values, dates) = DataAcquisition.get_endnode_data(
+            return (values, dates)
+
+        else:
+            allValues = []
+            allDates = []
+            with OpcUaClient(serverUrl) as client:
+                assert (client._client.uaclient._uasocket.timeout == 15)
+                sensorNode = DataAcquisition.get_sensor_node(
                     client,
-                    endNode,
-                    starttime,
-                    endtime
+                    macId,
+                    browseName
                 )
-                allValues.extend(values)
-                allDates.extend(dates)
-        return (allValues, allDates)
+
+                for path in DataAcquisition.endnodes_path_generator(sensorNode, axis_):
+                    DataAcquisition.LOGGER.info(
+                        'Browsing {:s} -> {:s}'.format(
+                            macId,
+                            sensorNode.get_browse_name().Name
+                        )
+                    )
+                    endNode = client.get_child(sensorNode, path)
+                    (values, dates) = DataAcquisition.get_endnode_data(
+                        client,
+                        endNode,
+                        starttime,
+                        endtime,
+                        browseName
+                    )
+                    allValues.extend(values)
+                    allDates.extend(dates)
+            return (allValues, allDates)
 
     @staticmethod
     def endnodes_path_generator(sensorNode, axis_):
@@ -237,19 +259,31 @@ class DataAcquisition(object):
         return sensorNode
 
     @staticmethod
-    def get_endnode_data(client, endNode, starttime, endtime):
-        dvList = DataAcquisition.download_endnode(
-            client,
-            endNode,
-            starttime,
-            endtime
-        )
-        dates, values = ([], [])
-        for dv in dvList:
-            dates.append(dv.SourceTimestamp.strftime('%Y-%m-%d %H:%M:%S'))
-            values.append(dv.Value.Value.y_ordinate)
+    def get_endnode_data(client, endNode, starttime, endtime, browseName):
+        if browseName == "boardTemperature":
+            dvList = DataAcquisition.download_endnode(
+                client,
+                endNode,
+                starttime,
+                endtime
+            )
+            dates, values = ([], [])
+            for dv in dvList:
+                dates.append(dv.SourceTimestamp.strftime('%Y-%m-%d %H:%M:%S'))
+                values.append(dv.Value.Value)
+        else:
+            dvList = DataAcquisition.download_endnode(
+                client,
+                endNode,
+                starttime,
+                endtime
+            )
+            dates, values = ([], [])
+            for dv in dvList:
+                dates.append(dv.SourceTimestamp.strftime('%Y-%m-%d %H:%M:%S'))
+                values.append(dv.Value.Value.y_ordinate)
 
-        # If no starttime is given, results of read_raw_history are reversed.
+            # If no starttime is given, results of read_raw_history are reversed.
         if starttime is None:
             values.reverse()
             dates.reverse()
@@ -334,7 +368,7 @@ class DataAcquisition(object):
 
     @staticmethod
     # test_data
-    def sche(data, title, result, score, sensor_name, model, num):
+    def sche(data, title, result, score, sensor_name, model, num, temperatures):
         raw = []
         print(title)
         data = data[-1]
@@ -349,16 +383,13 @@ class DataAcquisition(object):
         sensor_id = Sensor.query.filter_by(sensor_name=sensor_name).first()
         sen_id = sensor_id.sensor_id
 
-        sql = 'insert into sche_data(date_stamp,data_set,sensor_sensor_id,sensor_sensor_name) values(%s, %s,%s,%s)'
+        sql = 'insert into sche_data(date_stamp,data_set,sensor_sensor_id,sensor_sensor_name,temperate) values(%s, %s,%s,%s,%s)'
         curs = conn.cursor()
-        curs.execute(sql, (title, row_str, sen_id, sensor_name))
+        curs.execute(sql, (title, row_str, sen_id, sensor_name, temperatures))
         conn.commit()
-
-
 
         curs.execute('SELECT * FROM dongseo.sche_data where date_stamp = %s', title)
         date_raw = curs.fetchall()
-
 
         id = date_raw[0][2]
         print(id)
@@ -372,8 +403,9 @@ class DataAcquisition(object):
         # db.session.add(data_result)
         # db.session.commit()  # 변동사항 반영
         # db.session.refresh(data_result)  # DB저장
-        sql = 'insert into result(date_stamp, anomal_score, predict, train_data_num, sche_data_data_id, sensor_sensor_name, sensor_sensor_id) values(%s,%s,%s,%s,%s,%s,%s)'
-        curs.execute(sql, (datetime.datetime.now(), score, result, num,id,sensor_name,sen_id))
+
+        sql = "insert into result(date_stamp, anomal_score, predict, train_data_num, sche_data_data_id, sensor_sensor_name, sensor_sensor_id) values(%s,%s,%s,%s,%s,%s,%s)"
+        curs.execute(sql, (datetime.datetime.now(), float(score), float(result), num, id, sensor_name, sen_id))
         conn.commit()
 
         return title

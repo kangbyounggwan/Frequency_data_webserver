@@ -44,6 +44,8 @@ from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.validators import DataRequired, EqualTo
 from flask import session
 import opc_ua
+import staus
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 # 센서등록
@@ -360,12 +362,12 @@ def new_sensor(robot_id=None):
 # 로봇 세부사항(view detail)
 @app.route('/deteil/<int:robot_id>', methods=['GET'])
 def view_deteil(robot_id=None):
+    time, status, speed, step = staus.status()
     robot = Robot.query.filter_by(robot_id=robot_id).first()
     manufacture = robot.robot_manufacture
     line = robot.user_count_line_name
     robot_name = robot.robot_name
     id = robot.robot_id
-
     sensor = Sensor.query.filter_by(robot_robot_id=id).all()
     named = []
     locate = []
@@ -373,6 +375,9 @@ def view_deteil(robot_id=None):
     result = []
     ai_result = []
     sensor_id = []
+    temper = []
+    print(temper)
+
     for i in range(len(sensor)):
         name = sensor[i].sensor_name
         axis.append(sensor[i].axis)
@@ -380,17 +385,27 @@ def view_deteil(robot_id=None):
         named.append(name)
         sensor_id.append(sensor[i].sensor_id)
         globals()['{}'.format(sensor[i].sensor_name)] = Schedata.query.filter_by(sensor_sensor_name=name).order_by(
-            Schedata.data_id.desc())[:10]
+            Schedata.data_id.desc())[:5]
+        temper_ = Schedata.query.filter_by(sensor_sensor_name=name).order_by(
+            Schedata.data_id.desc()).first()
+        if temper_!= None:
+            temper.append(temper_.temperate)
+        else:
+            continue
         result.append(globals()['{}'.format(sensor[i].sensor_name)])
         globals()['{}'.format(sensor[i].sensor_name)] = Result.query.filter_by(sensor_sensor_name=name).order_by(
-            Result.result_key.desc())[:10]
+            Result.result_key.desc())[:5]
         ai_result.append(globals()['{}'.format(sensor[i].sensor_name)])
 
-    print(sensor_id)
+
     Train.query.filter(Train.model_name == None).delete()
     db.session.commit()
-
+    avr_tem = sum(temper) / len(temper)
     return render_template('view_details.html',
+                           temper=avr_tem,
+                           speed=speed,
+                           status=status,
+                           step=step,
                            line=line,
                            named=named,
                            robot_name=robot_name,
@@ -407,10 +422,10 @@ def view_deteil(robot_id=None):
 
 # 관리자 deteil
 # 로봇 세부사항(view detail)
-@app.route('/deteil_ad/<int:robot_id>', methods=['GET'])
+@app.route('/deteil_ad/<int:robot_id>', methods=['GET','POST'])
 def view_deteil_ad(robot_id=None):
     robot = Robot.query.filter_by(robot_id=robot_id).first()
-
+    time, status, speed, step = staus.status()
     manufacture = robot.robot_manufacture
     line = robot.user_count_line_name
     robot_name = robot.robot_name
@@ -423,6 +438,8 @@ def view_deteil_ad(robot_id=None):
     result = []
     ai_result = []
     sensor_id = []
+    temper = []
+    print(temper)
     for i in range(len(sensor)):
         name = sensor[i].sensor_name
         axis.append(sensor[i].axis)
@@ -432,13 +449,30 @@ def view_deteil_ad(robot_id=None):
         globals()['{}'.format(sensor[i].sensor_name)] = Schedata.query.filter_by(sensor_sensor_name=name).order_by(
             Schedata.data_id.desc())[:10]
         result.append(globals()['{}'.format(sensor[i].sensor_name)])
+        temper_ = Schedata.query.filter_by(sensor_sensor_name=name).order_by(
+            Schedata.data_id.desc()).first()
+        print(temper_)
+        if temper_ != None:
+            temper.append(temper_.temperate)
         globals()['{}'.format(sensor[i].sensor_name)] = Result.query.filter_by(sensor_sensor_name=name).order_by(
             Result.result_key.desc())[:10]
         ai_result.append(globals()['{}'.format(sensor[i].sensor_name)])
+    avr_tem = sum(temper) /len(temper)
+    print(avr_tem)
+    print(result)
+    print(speed)
+
+
+
     return render_template('view_details_ad.html',
+                           speed =speed,
+                           temper=avr_tem,
+                           status=status,
+                           step=step,
                            line=line,
                            named=named,
                            robot_name=robot_name,
+                           robot_id=robot_id,
                            result=result,
                            zip=zip,
                            axis=axis,
@@ -824,5 +858,9 @@ def scatter(data, predict):
     return inlier, outlier
 
 
+scheduler = BackgroundScheduler()
+job = scheduler.add_job(staus.status, 'interval', seconds=5)
+scheduler.start()
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port="5000", debug=True, use_reloader=False, threaded=True)
+    app.run(host="0.0.0.0", port="5005", use_reloader=False, threaded=True)

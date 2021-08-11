@@ -3,7 +3,7 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="10e71488-f845-440a-8ca7-5c2b58ffcf28" name="dongseo" url="ec2-3-36-131-14.ap-northeast-2.compute.amazonaws.com">
-        <fileTransfer rootFolder="" accessType="SFTP" host="ec2-3-36-131-14.ap-northeast-2.compute.amazonaws.com" port="22" sshConfigId="b3079215-4fd5-4265-b09d-f7063a0bb874" sshConfig="ubuntu@ec2-3-36-131-14.ap-northeast-2.compute.amazonaws.com:22 key" keyPair="true">
+        <fileTransfer rootFolder="" accessType="SFTP" host="13.125.218.250" port="22" sshConfigId="b3079215-4fd5-4265-b09d-f7063a0bb874" sshConfig="ubuntu@13.125.218.250:22 key" keyPair="true">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
