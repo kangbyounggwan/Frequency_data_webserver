@@ -355,7 +355,7 @@ class DataAcquisition(object):
 
         sensor_id = Sensor.query.filter_by(sensor_name=name).first()
         datafild = Train(date_stamp=None, data_set=None, model_name=None, sensor_senor_id=None, num=None,
-                         sensor_sensor_name=None, model_predict=None, score=None)
+                         sensor_sensor_name=None, model_predict=None, score=None,module=None)
 
         datafild.date_stamp = datetime.datetime.now()
         datafild.data_set = row_str

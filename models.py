@@ -8,8 +8,7 @@ from flask_caching import Cache
 from flask import Flask
 
 app = Flask(__name__)
-cache = Cache(app,config={'CACHE_TYPE': 'simple'})
-
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
 app.debug = True
 # Flask Setting
@@ -21,9 +20,10 @@ app.config['SECRET_KEY'] = SECRET_KEY
 app.config['FLASK_ADMIN'] = FLASK_ADMIN
 app.config['CHARSET'] = 'utf-8'
 app.config['JSON_AS_ASCII'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:tachyon123@kbg.co7hg2djahjf.ap-northeast-2.rds.amazonaws.com:3306/dongseo"
+app.config[
+    'SQLALCHEMY_DATABASE_URI'] = "mysql://root:tachyon123@kbg.co7hg2djahjf.ap-northeast-2.rds.amazonaws.com:3306/dongseo"
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_size': 100, 'pool_recycle': 280}
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:tachyon123@34.64.188.127:3306/dongseo'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:tachyon123@34.64.188.127:3306/dongseo'
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 from flask_debugtoolbar import DebugToolbarExtension
@@ -111,6 +111,7 @@ class Schedata(db.Model):
         self.sensor_sensor_id = sensor_sensor_id
         self.temperate = temperate
 
+
 class Sche_dataSchema(ma.Schema):
     class Meta:
         fields = ('date_stamp', 'data_set', 'data_id', 'sensor_sensor_name', 'sensor_sensor_id', 'temperate')
@@ -156,9 +157,10 @@ class Train(db.Model):
     num = db.Column('num', Integer, primary_key=True)
     model_predict = db.Column('model_predict', Text)
     score = db.Column('score', Text)
+    module = db.Column('module', Text)
 
     def __init__(self, date_stamp, data_set, model_name, sensor_sensor_name, sensor_senor_id, num, model_predict,
-                 score):
+                 score, module):
         self.date_stamp = date_stamp
         self.data_set = data_set
         self.model_name = model_name
@@ -167,13 +169,13 @@ class Train(db.Model):
         self.num = num
         self.model_predict = model_predict
         self.score = score
-
+        self.module = module
 
 class TrainSchema(ma.Schema):
     class Meta:
         fields = (
             ' date_stamp', 'data_set', 'model_name', 'sensor_sensor_name', 'sensor_sensor_id', 'num', 'model_predict',
-            'score')
+            'score', 'module')
 
 
 train_schema = TrainSchema()

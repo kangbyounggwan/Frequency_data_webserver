@@ -46,6 +46,7 @@ from flask import session
 import opc_ua
 import staus
 from apscheduler.schedulers.background import BackgroundScheduler
+from opc_ua import conn
 
 
 # 센서등록
@@ -499,12 +500,13 @@ def plot_sensor(sensor_id=None):
     sensor_axis = sensor.axis
     sensor_sample = sensor.sample
     model_num = num.num
-    data = Result.query.filter_by(train_data_num=model_num).all()
-    data_ = data[-50:]
+    data_ = Result.query.filter_by(sensor_sensor_id=sensor_id).order_by(Result.result_key.desc())[:100]
     sche_data = []
     predict = []
     score = []
     title = []
+    start_time = datetime.datetime.now()
+
     for i in data_:
         predict.append(i.predict)
         score.append(i.anomal_score)
@@ -515,9 +517,15 @@ def plot_sensor(sensor_id=None):
 
     add_data = []
     add_title = []
-
+    form = ExampleForm()
     inlier, outlier = scatter(sche_data, predict)
     clicked = None
+    end_time = datetime.datetime.now()
+    inference_time =end_time - start_time
+
+    print('조회시간:',inference_time)
+
+
     if request.method == "POST":
         clicked = request.get_json()['data']
         clicked = int(clicked)
@@ -529,12 +537,13 @@ def plot_sensor(sensor_id=None):
 
         return jsonify({
             'data': add_data,
-            'title': add_title
+            'title': add_title,
         })
 
     return render_template('3charts.html',
                            add_data=add_data,
                            add_title=add_title,
+                           form=form,
                            robot_id=robot_id,
                            sensor_id=sensor_id,
                            sensor_name=sensor_name,
@@ -546,6 +555,44 @@ def plot_sensor(sensor_id=None):
                            score=score,
                            zip=zip,
                            enumerate=enumerate)
+
+
+# @app.route('/search/<sensor_name>', methods=['POST', 'GET'])
+# def search(sensor_name):
+#     form = ExampleForm()
+#
+#     start_date = form.dt.data.strftime("%Y-%m-%d")
+#     end_date = form.dta.data.strftime("%Y-%m-%d")
+#     curs = conn.cursor()
+#     curs.execute(
+#         "SELECT date_stamp, data_set, data_id from sche_data  where  date_stamp >= %s and date_stamp < %s and sensor_sensor_name = %s",
+#         (start_date, end_date, sensor_name))
+#     row_data = curs.fetchall()
+#
+#     add_data = []
+#     add_title = []
+#     predict_ = []
+#     num = []
+#     for i in range(len(row_data)):
+#         x = pd.Series(np.fromstring(row_data[i][1], dtype=float, sep=','))
+#         add_data.append(x)
+#         add_title.append(row_data[i][0])
+#         num.append(row_data[i][2])
+#
+#     for i in range(len(num)):
+#         scatter_ = Result.query.filter_by(sche_data_data_id=num[i]).first()
+#         if scatter_ == None:
+#             del add_data[i]
+#             del add_title[i]
+#         else:
+#             predict_.append(scatter_.predict)
+#             score.append(scatter_.anomal_score)
+#     inlier, outlier = scatter(add_data, predict_)
+#     print(score)
+#     return jsonify({
+#         'score': score
+#     })
+
 
 
 # scatter plot - train data
@@ -598,7 +645,7 @@ def train(sensor_id=None):
     model_name = train.model_name
     date = train.date_stamp
     num = train.num
-
+    algorithm = train.module
     sensor = Sensor.query.filter_by(robot_robot_id=robot_id).all()
     name = []
     sensor_id_ = []
@@ -619,6 +666,7 @@ def train(sensor_id=None):
                            sensor_id=sensor_id_,
                            sen_id=sensor_id,
                            name=name,
+                           algorithm=algorithm,
                            zip=zip,
                            enumerate=enumerate
                            )
@@ -627,8 +675,6 @@ def train(sensor_id=None):
 # train result
 @app.route('/<int:sensor_id>,<start_date>,<end_date>', methods=['GET', 'POST'])
 def train_result(sensor_id=None, start_date=None, end_date=None):
-    start_date_ = start_date
-    end_date_ = end_date
     sensor = Sensor.query.filter_by(sensor_id=sensor_id).first()
     sensor_name = sensor.sensor_name
     robot_id = sensor.robot_robot_id
@@ -788,8 +834,8 @@ def all_dash():
 
 
 # model 생성및 저장
-@app.route('/api/models/<int:num>', methods=['GET'])
-def new_model(num=None, select=None):
+@app.route('/api/models/<int:num><select>', methods=['GET'])
+def new_model(num, select):
     # model 생성및 저장
     item_ = Train.query.filter_by(num=num).first()
     item = item_.data_set
@@ -805,8 +851,6 @@ def new_model(num=None, select=None):
     samp = int(samp[0])
 
     X_train, X_test = anomal_model.anomal_model_(item, detection_type, training_ratio, samp)
-    print(X_train.shape)
-    print(X_test.shape)
 
     # 본인data model score 생성
     model, score, result = anomal_model.algorithm_train(X_train, X_test, select)
@@ -825,11 +869,14 @@ def new_model(num=None, select=None):
 
     score = ",".join(score_)
     result = ",".join(result_)
+
+    item_.module = select
+    print(select)
     item_.model_name = name
     item_.score = score
     item_.model_predict = result
+
     db.session.commit()
-    print(current_model_path)
     gc.collect()
 
     return redirect(url_for('train', sensor_id=sensor_id))
@@ -840,6 +887,7 @@ def modeling():
     if request.method == 'POST':
         temp = request.form['id']
         select = request.form.get('algorithm')
+        print(select)
     else:
         temp = None
         select = None
